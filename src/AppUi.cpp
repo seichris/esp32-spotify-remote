@@ -27,7 +27,7 @@ bool jpegOutput(int16_t x, int16_t y, uint16_t width, uint16_t height,
 }
 
 constexpr int16_t kHeaderHeight = 42;
-constexpr int16_t kArtTop = 52;
+constexpr int16_t kArtTop = 32;
 constexpr int16_t kArtSize = 300;
 constexpr int16_t kMetadataTop = kArtTop + kArtSize;
 constexpr int16_t kProgressTop = 405;
@@ -124,9 +124,6 @@ void AppUi::renderTrack(const TrackInfo& track, const char* artwork_path,
     gfx.fillScreen(RGB565_BLACK);
   }
 
-  if (first_render || playback_changed) {
-    drawHeader(track.is_playing ? "Now playing" : "Paused", RGB565_SPOTIFY_GREEN);
-  }
   if (artwork_changed) {
     drawTrackArtwork(artwork_path, artwork_available);
   }
@@ -220,10 +217,23 @@ void AppUi::drawControls(bool is_playing) {
   }
 
   const int16_t center_y = kControlsTop + (BoardDisplay::kHeight - kControlsTop) / 2;
-  // Previous.
-  gfx.fillRect(43, center_y - 16, 5, 32, RGB565_WHITE);
-  gfx.fillTriangle(48, center_y, 76, center_y - 19, 76, center_y + 19,
-                   RGB565_WHITE);
+  constexpr int16_t kSkipBarWidth = 6;
+  constexpr int16_t kSkipGap = 5;
+  constexpr int16_t kSkipTriangleWidth = 30;
+  constexpr int16_t kSkipHeight = 40;
+  constexpr int16_t kSkipWidth =
+      kSkipBarWidth + kSkipGap + kSkipTriangleWidth;
+
+  // Previous: a centered bar followed by a left-pointing triangle.
+  const int16_t previous_left = kControlWidth / 2 - kSkipWidth / 2;
+  const int16_t previous_tip = previous_left + kSkipBarWidth + kSkipGap;
+  const int16_t previous_base = previous_tip + kSkipTriangleWidth;
+  gfx.fillRect(previous_left, center_y - kSkipHeight / 2, kSkipBarWidth,
+               kSkipHeight, RGB565_WHITE);
+  gfx.fillTriangle(previous_tip, center_y, previous_base,
+                   center_y - kSkipHeight / 2, previous_base,
+                   center_y + kSkipHeight / 2, RGB565_WHITE);
+
   // Play / pause.
   const int16_t center_x = kControlWidth + kControlWidth / 2;
   if (is_playing) {
@@ -233,11 +243,16 @@ void AppUi::drawControls(bool is_playing) {
     gfx.fillTriangle(center_x - 13, center_y - 22, center_x - 13,
                      center_y + 22, center_x + 23, center_y, RGB565_WHITE);
   }
-  // Next.
-  const int16_t right_base = kControlWidth * 2;
-  gfx.fillTriangle(right_base + 60, center_y - 19, right_base + 60,
-                   center_y + 19, right_base + 88, center_y, RGB565_WHITE);
-  gfx.fillRect(right_base + 88, center_y - 16, 5, 32, RGB565_WHITE);
+
+  // Next: a right-pointing triangle followed by a centered bar.
+  const int16_t next_left = kControlWidth * 2 + kControlWidth / 2 - kSkipWidth / 2;
+  const int16_t next_tip = next_left + kSkipTriangleWidth;
+  const int16_t next_bar = next_tip + kSkipGap;
+  gfx.fillTriangle(next_left, center_y - kSkipHeight / 2, next_left,
+                   center_y + kSkipHeight / 2, next_tip, center_y,
+                   RGB565_WHITE);
+  gfx.fillRect(next_bar, center_y - kSkipHeight / 2, kSkipBarWidth,
+               kSkipHeight, RGB565_WHITE);
 }
 
 void AppUi::drawTrackArtwork(const char* artwork_path, bool artwork_available) {
@@ -275,11 +290,11 @@ void AppUi::drawProgressBar(uint32_t progress_ms, uint32_t duration_ms) {
 void AppUi::drawPlaceholderArt() {
   Arduino_GFX& gfx = display_.gfx();
   gfx.fillRoundRect(55, kArtTop, kArtSize, kArtSize, 16, 0x2104);
-  gfx.fillCircle(175, 235, 36, RGB565_SPOTIFY_GREEN);
-  gfx.fillCircle(270, 210, 36, RGB565_SPOTIFY_GREEN);
-  gfx.fillRect(206, 120, 12, 118, RGB565_SPOTIFY_GREEN);
-  gfx.fillRect(301, 95, 12, 118, RGB565_SPOTIFY_GREEN);
-  gfx.fillRect(212, 95, 95, 14, RGB565_SPOTIFY_GREEN);
+  gfx.fillCircle(175, kArtTop + 183, 36, RGB565_SPOTIFY_GREEN);
+  gfx.fillCircle(270, kArtTop + 158, 36, RGB565_SPOTIFY_GREEN);
+  gfx.fillRect(206, kArtTop + 68, 12, 118, RGB565_SPOTIFY_GREEN);
+  gfx.fillRect(301, kArtTop + 43, 12, 118, RGB565_SPOTIFY_GREEN);
+  gfx.fillRect(212, kArtTop + 43, 95, 14, RGB565_SPOTIFY_GREEN);
 }
 
 void AppUi::drawCenteredText(const String& text, int16_t y, uint8_t size,

@@ -100,19 +100,34 @@ void renderCurrentTrack(bool force_artwork_download) {
   }
 
   const bool artwork_changed = current_track.artwork_url != current_artwork_url;
-  if ((force_artwork_download || artwork_changed) &&
-      !current_track.artwork_url.isEmpty()) {
-    ui.showStatus("Loading album art", current_track.title);
-    artwork_available = spotify.downloadArtwork(
-        current_track.artwork_url, LittleFS, Config::kAlbumArtPath,
-        Config::kAlbumArtTempPath, error);
-    if (!artwork_available) {
-      Serial.printf("Artwork unavailable: %s\n", error.c_str());
-    }
-    current_artwork_url = current_track.artwork_url;
+  if (current_track.artwork_url.isEmpty()) {
+    current_artwork_url.clear();
+    artwork_available = false;
+  } else if (artwork_changed) {
+    // Do not show artwork belonging to the previous track while the new image
+    // is downloading.  The now-playing screen remains visible with its
+    // placeholder, controls, title, artist, and progress bar.
+    artwork_available = false;
   }
 
   ui.renderTrack(current_track, Config::kAlbumArtPath, artwork_available);
+
+  if ((force_artwork_download || artwork_changed) &&
+      !current_track.artwork_url.isEmpty()) {
+    const bool downloaded = spotify.downloadArtwork(
+        current_track.artwork_url, LittleFS, Config::kAlbumArtPath,
+        Config::kAlbumArtTempPath, error);
+    current_artwork_url = current_track.artwork_url;
+    if (!downloaded) {
+      Serial.printf("Artwork unavailable: %s\n", error.c_str());
+    } else {
+      // Replace only the artwork area by redrawing the now-playing screen once
+      // the new image is ready; no loading/status screen is shown.
+      artwork_available = true;
+      ui.renderTrack(current_track, Config::kAlbumArtPath, artwork_available);
+    }
+  }
+
   next_spotify_poll_ms = millis() + Config::kSpotifyPollMs;
   next_progress_refresh_ms = millis() + Config::kProgressRefreshMs;
 }
