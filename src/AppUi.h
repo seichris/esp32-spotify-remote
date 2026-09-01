@@ -24,10 +24,21 @@ class AppUi {
   bool commandAt(const TouchPoint& point, PlaybackCommand& command) const;
 
  private:
+  enum class ScreenMode {
+    kUnknown,
+    kStatus,
+    kAuthorization,
+    kNoPlayback,
+    kTrack,
+  };
+
   static constexpr uint16_t RGB565_SPOTIFY_GREEN = 0x1EC7;
 
+  void invalidateTrack();
   void drawHeader(const String& text, uint16_t accent);
   void drawControls(bool is_playing);
+  void drawTrackArtwork(const char* artwork_path, bool artwork_available);
+  void drawTrackMetadata(const TrackInfo& track);
   void drawProgressBar(uint32_t progress_ms, uint32_t duration_ms);
   void drawPlaceholderArt();
   void drawCenteredText(const String& text, int16_t y, uint8_t size,
@@ -38,4 +49,12 @@ class AppUi {
 
   BoardDisplay& display_;
   TrackInfo last_track_;
+  bool track_frame_valid_ = false;
+  bool controls_dirty_ = false;
+  bool last_artwork_available_ = false;
+  ScreenMode screen_mode_ = ScreenMode::kUnknown;
+  String status_heading_;
+  String status_detail_;
+  uint16_t status_accent_ = RGB565_SPOTIFY_GREEN;
+  String authorization_url_;
 };

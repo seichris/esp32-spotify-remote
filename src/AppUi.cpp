@@ -29,6 +29,7 @@ bool jpegOutput(int16_t x, int16_t y, uint16_t width, uint16_t height,
 constexpr int16_t kHeaderHeight = 42;
 constexpr int16_t kArtTop = 52;
 constexpr int16_t kArtSize = 300;
+constexpr int16_t kMetadataTop = kArtTop + kArtSize;
 constexpr int16_t kProgressTop = 405;
 constexpr int16_t kControlsTop = 426;
 constexpr int16_t kControlWidth = BoardDisplay::kWidth / 3;
@@ -39,12 +40,23 @@ AppUi::AppUi(BoardDisplay& display) : display_(display) {}
 void AppUi::begin() {
   TJpgDec.setCallback(jpegOutput);
   TJpgDec.setSwapBytes(false);
+  invalidateTrack();
   display_.gfx().fillScreen(RGB565_BLACK);
 }
 
 void AppUi::showStatus(const String& heading, const String& detail,
                        uint16_t accent) {
+  if (screen_mode_ == ScreenMode::kStatus && heading == status_heading_ &&
+      detail == status_detail_ && accent == status_accent_) {
+    return;
+  }
+
   Arduino_GFX& gfx = display_.gfx();
+  invalidateTrack();
+  screen_mode_ = ScreenMode::kStatus;
+  status_heading_ = heading;
+  status_detail_ = detail;
+  status_accent_ = accent;
   gfx.fillScreen(RGB565_BLACK);
   drawHeader("Spotify Remote", accent);
   drawCenteredText(heading, 170, 3, RGB565_WHITE, 380);
@@ -54,7 +66,15 @@ void AppUi::showStatus(const String& heading, const String& detail,
 }
 
 void AppUi::showAuthorization(const String& device_url) {
+  if (screen_mode_ == ScreenMode::kAuthorization &&
+      device_url == authorization_url_) {
+    return;
+  }
+
   Arduino_GFX& gfx = display_.gfx();
+  invalidateTrack();
+  screen_mode_ = ScreenMode::kAuthorization;
+  authorization_url_ = device_url;
   gfx.fillScreen(RGB565_BLACK);
   drawHeader("Spotify setup", RGB565_SPOTIFY_GREEN);
   drawCenteredText("Open on your computer", 135, 2, RGB565_WHITE);
@@ -65,7 +85,13 @@ void AppUi::showAuthorization(const String& device_url) {
 }
 
 void AppUi::showNoPlayback() {
+  if (screen_mode_ == ScreenMode::kNoPlayback) {
+    return;
+  }
+
   Arduino_GFX& gfx = display_.gfx();
+  invalidateTrack();
+  screen_mode_ = ScreenMode::kNoPlayback;
   gfx.fillScreen(RGB565_BLACK);
   drawHeader("Spotify Remote", RGB565_SPOTIFY_GREEN);
   drawPlaceholderArt();
@@ -81,21 +107,49 @@ void AppUi::showError(const String& detail) {
 void AppUi::renderTrack(const TrackInfo& track, const char* artwork_path,
                         bool artwork_available) {
   Arduino_GFX& gfx = display_.gfx();
-  gfx.fillScreen(RGB565_BLACK);
-  drawHeader(track.is_playing ? "Now playing" : "Paused", RGB565_SPOTIFY_GREEN);
+  const bool first_render = screen_mode_ != ScreenMode::kTrack ||
+                            !track_frame_valid_;
+  const bool artwork_changed =
+      first_render || track.artwork_url != last_track_.artwork_url ||
+      artwork_available != last_artwork_available_;
+  const bool metadata_changed =
+      first_render || track.uri != last_track_.uri ||
+      track.title != last_track_.title || track.artists != last_track_.artists;
+  const bool playback_changed =
+      first_render || track.is_playing != last_track_.is_playing;
 
-  if (!artwork_available || !drawJpeg(artwork_path, 55, kArtTop, kArtSize)) {
-    drawPlaceholderArt();
+  // Keep the existing frame on the panel during normal polling. A full clear
+  // is reserved for the first track after a screen transition.
+  if (first_render) {
+    gfx.fillScreen(RGB565_BLACK);
   }
 
-  drawCenteredText(track.title, 360, 2, RGB565_WHITE, 390);
-  drawCenteredText(track.artists, 386, 1, RGB565_LIGHTGREY, 390);
+  if (first_render || playback_changed) {
+    drawHeader(track.is_playing ? "Now playing" : "Paused", RGB565_SPOTIFY_GREEN);
+  }
+  if (artwork_changed) {
+    drawTrackArtwork(artwork_path, artwork_available);
+  }
+  if (metadata_changed) {
+    drawTrackMetadata(track);
+  }
   drawProgressBar(track.progress_ms, track.duration_ms);
-  drawControls(track.is_playing);
+  if (first_render || playback_changed || controls_dirty_) {
+    drawControls(track.is_playing);
+  }
+
   last_track_ = track;
+  last_artwork_available_ = artwork_available;
+  track_frame_valid_ = true;
+  controls_dirty_ = false;
+  screen_mode_ = ScreenMode::kTrack;
 }
 
 void AppUi::updateProgress(const TrackInfo& track) {
+  if (!track_frame_valid_) {
+    return;
+  }
+
   uint32_t progress = track.progress_ms;
   if (track.is_playing) {
     progress += millis() - track.sampled_at_ms;
@@ -122,6 +176,7 @@ void AppUi::showCommandFeedback(PlaybackCommand command) {
   }
   gfx.fillRect(x + 4, kControlsTop + 4, kControlWidth - 8,
                BoardDisplay::kHeight - kControlsTop - 8, RGB565_DARKGREY);
+  controls_dirty_ = true;
 }
 
 bool AppUi::commandAt(const TouchPoint& point, PlaybackCommand& command) const {
@@ -136,6 +191,11 @@ bool AppUi::commandAt(const TouchPoint& point, PlaybackCommand& command) const {
     command = PlaybackCommand::kNext;
   }
   return true;
+}
+
+void AppUi::invalidateTrack() {
+  track_frame_valid_ = false;
+  controls_dirty_ = false;
 }
 
 void AppUi::drawHeader(const String& text, uint16_t accent) {
@@ -178,6 +238,22 @@ void AppUi::drawControls(bool is_playing) {
   gfx.fillTriangle(right_base + 60, center_y - 19, right_base + 60,
                    center_y + 19, right_base + 88, center_y, RGB565_WHITE);
   gfx.fillRect(right_base + 88, center_y - 16, 5, 32, RGB565_WHITE);
+}
+
+void AppUi::drawTrackArtwork(const char* artwork_path, bool artwork_available) {
+  Arduino_GFX& gfx = display_.gfx();
+  gfx.fillRect(55, kArtTop, kArtSize, kArtSize, RGB565_BLACK);
+  if (!artwork_available || !drawJpeg(artwork_path, 55, kArtTop, kArtSize)) {
+    drawPlaceholderArt();
+  }
+}
+
+void AppUi::drawTrackMetadata(const TrackInfo& track) {
+  Arduino_GFX& gfx = display_.gfx();
+  gfx.fillRect(0, kMetadataTop, BoardDisplay::kWidth,
+               kProgressTop - kMetadataTop, RGB565_BLACK);
+  drawCenteredText(track.title, 360, 2, RGB565_WHITE, 390);
+  drawCenteredText(track.artists, 386, 1, RGB565_LIGHTGREY, 390);
 }
 
 void AppUi::drawProgressBar(uint32_t progress_ms, uint32_t duration_ms) {
