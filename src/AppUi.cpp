@@ -2,6 +2,8 @@
 
 #include <LittleFS.h>
 #include <TJpg_Decoder.h>
+#include <canvas/Arduino_Canvas.h>
+#include <new>
 
 #include "Config.h"
 
@@ -86,9 +88,20 @@ void drawPointingTriangle(Arduino_GFX& gfx, int16_t base_x, int16_t tip_x,
 
 AppUi::AppUi(BoardDisplay& display) : display_(display) {}
 
+AppUi::~AppUi() { delete title_canvas_; }
+
 void AppUi::begin() {
   TJpgDec.setCallback(jpegOutput);
   TJpgDec.setSwapBytes(false);
+  if (title_canvas_ == nullptr) {
+    Arduino_Canvas* canvas = new (std::nothrow) Arduino_Canvas(
+        kTitleWidth, kTitleLineHeight, &display_.gfx(), kTitleLeft, kTitleTop);
+    if (canvas != nullptr && canvas->begin(GFX_SKIP_OUTPUT_BEGIN)) {
+      title_canvas_ = canvas;
+    } else {
+      delete canvas;
+    }
+  }
   invalidateTrack();
   display_.gfx().fillScreen(RGB565_BLACK);
 }
@@ -350,38 +363,51 @@ void AppUi::drawTrackMetadata(const TrackInfo& track) {
 }
 
 void AppUi::drawTrackTitle(const String& title) {
-  Arduino_GFX& gfx = display_.gfx();
+  Arduino_GFX& output = display_.gfx();
+  Arduino_GFX* target = &output;
+  int16_t origin_x = kTitleLeft;
+  int16_t origin_y = kTitleTop;
+  int16_t reset_width = BoardDisplay::kWidth;
+  int16_t reset_height = BoardDisplay::kHeight;
+  if (title_canvas_ != nullptr) {
+    target = title_canvas_;
+    origin_x = 0;
+    origin_y = 0;
+    reset_width = kTitleWidth;
+    reset_height = kTitleLineHeight;
+  }
+
   const int32_t title_width = static_cast<int32_t>(title.length()) *
                               (6 * kTitleTextSize);
-  gfx.fillRect(kTitleLeft, kTitleTop, kTitleWidth, kTitleLineHeight,
-               RGB565_BLACK);
-  gfx.setTextSize(kTitleTextSize);
-  gfx.setTextColor(RGB565_WHITE, RGB565_BLACK);
-  gfx.setTextWrap(false);
+  target->fillRect(origin_x, origin_y, kTitleWidth, kTitleLineHeight,
+                   RGB565_BLACK);
+  target->setTextSize(kTitleTextSize);
+  target->setTextColor(RGB565_WHITE, RGB565_BLACK);
+  target->setTextWrap(false);
 
   if (title_width <= kTitleWidth) {
     const int16_t cursor_x =
-        kTitleLeft + (kTitleWidth - static_cast<int16_t>(title_width)) / 2;
-    gfx.setCursor(cursor_x, kTitleTop);
-    gfx.print(title);
-    gfx.setTextBound(0, 0, BoardDisplay::kWidth, BoardDisplay::kHeight);
-    gfx.setTextWrap(true);
-    return;
+        origin_x + (kTitleWidth - static_cast<int16_t>(title_width)) / 2;
+    target->setCursor(cursor_x, origin_y);
+    target->print(title);
+  } else {
+    target->setTextBound(origin_x, origin_y, kTitleWidth, kTitleLineHeight);
+    const int32_t first_x = origin_x - title_scroll_offset_;
+    target->setCursor(static_cast<int16_t>(first_x), origin_y);
+    target->print(title);
+
+    const int32_t second_x = first_x + title_width + kTitleScrollGap;
+    if (second_x < origin_x + kTitleWidth) {
+      target->setCursor(static_cast<int16_t>(second_x), origin_y);
+      target->print(title);
+    }
   }
 
-  gfx.setTextBound(kTitleLeft, kTitleTop, kTitleWidth, kTitleLineHeight);
-  const int32_t first_x = kTitleLeft - title_scroll_offset_;
-  gfx.setCursor(static_cast<int16_t>(first_x), kTitleTop);
-  gfx.print(title);
-
-  const int32_t second_x = first_x + title_width + kTitleScrollGap;
-  if (second_x < kTitleLeft + kTitleWidth) {
-    gfx.setCursor(static_cast<int16_t>(second_x), kTitleTop);
-    gfx.print(title);
+  target->setTextBound(0, 0, reset_width, reset_height);
+  target->setTextWrap(true);
+  if (title_canvas_ != nullptr) {
+    title_canvas_->flush();
   }
-
-  gfx.setTextBound(0, 0, BoardDisplay::kWidth, BoardDisplay::kHeight);
-  gfx.setTextWrap(true);
 }
 
 void AppUi::drawProgressBar(uint32_t progress_ms, uint32_t duration_ms) {

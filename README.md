@@ -1,4 +1,4 @@
-# ESP32 Spotify Remote — Waveshare 2.06-inch AMOLED
+# ESP32 Spotify Remote
 
 ![ESP32 Spotify Remote](assets/esp32-spotify.jpg)
 

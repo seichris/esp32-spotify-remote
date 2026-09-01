@@ -6,9 +6,12 @@
 #include "SpotifyClient.h"
 #include "TouchController.h"
 
+class Arduino_Canvas;
+
 class AppUi {
  public:
   explicit AppUi(BoardDisplay& display);
+  ~AppUi();
 
   void begin();
   void showStatus(const String& heading, const String& detail = String(),
@@ -56,6 +59,7 @@ class AppUi {
   bool last_artwork_available_ = false;
   int32_t title_scroll_offset_ = 0;
   uint32_t next_title_scroll_ms_ = 0;
+  Arduino_Canvas* title_canvas_ = nullptr;
   ScreenMode screen_mode_ = ScreenMode::kUnknown;
   String status_heading_;
   String status_detail_;
