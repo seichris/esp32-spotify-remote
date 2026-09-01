@@ -1,9 +1,9 @@
 {
   "name": "esp32-spotify-remote-waveshare-amoled-2.06",
-  "generated_at_utc": "2026-09-01T08:00:00Z",
+  "generated_at_utc": "2026-09-01T14:28:59Z",
   "target": "Waveshare ESP32-S3-Touch-AMOLED-2.06",
   "status": "source snapshot; static repository checks passed; physical-board validation still required",
-  "file_count": 27,
+  "file_count": 30,
   "files": [
     {
       "path": ".github/workflows/platformio.yml",
@@ -14,6 +14,11 @@
       "path": ".gitignore",
       "size": 69,
       "sha256": "2956015e6df48fdbe5303071aa321985e90e58655a94cb7da326fb59bd2a8050"
+    },
+    {
+      "path": "assets/esp32-spotify.jpg",
+      "size": 175444,
+      "sha256": "241fccec9e9369bb3d25ac182841351ddc51aaee35d2ad26a8b24eb19e9d1f63"
     },
     {
       "path": "LICENSE",
@@ -27,8 +32,8 @@
     },
     {
       "path": "README.md",
-      "size": 4331,
-      "sha256": "7e79bf516e4db45fc071890aa94fc9cb388aacd782674e70f95500970f05df40"
+      "size": 4382,
+      "sha256": "05a0191402ad06eb9ce59dfbe0c257bbbc5010786148418d0b7811199dc2d969"
     },
     {
       "path": "data/README.md",
@@ -37,18 +42,18 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "size": 1431,
-      "sha256": "5b15284c01a1def65f6379d3c443cc6922419435e866684b80a5be9d6b52d83f"
+      "size": 1512,
+      "sha256": "988fc709b66ad21ef4d032c0b933114a8cdc653c0a3eb6f20f8c688efd56e2d8"
     },
     {
       "path": "docs/HARDWARE.md",
-      "size": 692,
-      "sha256": "ac09e1152695e2eed8fd1c9b12441c4d9c3cd6564b8a14634ac1666100ef8fed"
+      "size": 1083,
+      "sha256": "bd51d86de34a0b8064de4068de38026da75bd61debc759f6650b610dad973a56"
     },
     {
       "path": "docs/TESTING.md",
-      "size": 933,
-      "sha256": "ad9c03b79f84c1c0377983280ba8fd5585cee9530f7520e1044ab8ada575c4b7"
+      "size": 1097,
+      "sha256": "06eb45d19e46c00957895877181b54eae9cc456b2649078aa551fa785fb4c25a"
     },
     {
       "path": "include/Config.h",
@@ -101,6 +106,16 @@
       "sha256": "8de9cb2bf1a179e4376a9ade0639f81495643f33051aa0c9d472673ea9d3d55f"
     },
     {
+      "path": "src/PhysicalButtons.cpp",
+      "size": 3347,
+      "sha256": "67fa307cda66aac48a354b8945d996733a165a11255030d716b5e0865f34e1af"
+    },
+    {
+      "path": "src/PhysicalButtons.h",
+      "size": 794,
+      "sha256": "b9e67c940f27449d6ad45fdc6715c11dbeed660e1f3e4988031fd1d65eb4fc5c"
+    },
+    {
       "path": "src/SpotifyClient.cpp",
       "size": 16697,
       "sha256": "2541035345f89ee740153e91540d608cfc418ba6bcb2d6080d92ac675d221add"
@@ -127,8 +142,8 @@
     },
     {
       "path": "src/main.cpp",
-      "size": 6880,
-      "sha256": "6592abad0d43814ec469d5e24c392f2aaa20e6d1dccbbbbf032afa4d36356953"
+      "size": 7747,
+      "sha256": "7d25b41bdd40ef2810c6f7d8af71f5bb3ac3e3a350c9498f8268d6fc57e337f5"
     },
     {
       "path": "tools/check_repository.py",

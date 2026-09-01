@@ -4,6 +4,7 @@ The firmware intentionally separates board-specific I/O from Spotify behavior:
 
 - `BoardDisplay` owns the CO5300 QSPI AMOLED and its brightness control.
 - `TouchController` talks directly to the FT3168-compatible controller over I2C.
+- `PhysicalButtons` debounces the BOOT GPIO and reads the AXP2101 PWR-key event.
 - `SpotifyClient` owns PKCE, refresh-token persistence, verified HTTPS requests,
   playback state, controls, and album-art downloads.
 - `OAuthPortal` serves the local setup page and accepts the callback forwarded by

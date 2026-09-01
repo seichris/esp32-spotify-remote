@@ -8,12 +8,14 @@
 #include "BoardDisplay.h"
 #include "Config.h"
 #include "OAuthPortal.h"
+#include "PhysicalButtons.h"
 #include "SpotifyClient.h"
 #include "TouchController.h"
 
 namespace {
 BoardDisplay display;
 TouchController touch;
+PhysicalButtons physical_buttons;
 SpotifyClient spotify;
 OAuthPortal oauth_portal(spotify);
 AppUi ui(display);
@@ -132,23 +134,46 @@ void renderCurrentTrack(bool force_artwork_download) {
   next_progress_refresh_ms = millis() + Config::kProgressRefreshMs;
 }
 
+void executePlaybackCommand(PlaybackCommand command) {
+  if (!current_track.available) {
+    return;
+  }
+
+  ui.showCommandFeedback(command);
+  String error;
+  if (!spotify.sendPlaybackCommand(command, current_track.is_playing, error)) {
+    ui.showError(error);
+    return;
+  }
+
+  delay(120);
+  renderCurrentTrack(false);
+}
+
 void handleTouch() {
   TouchPoint point;
   const bool touch_is_down = touch.read(point);
   if (touch_is_down && !touch_was_down && current_track.available) {
     PlaybackCommand command;
     if (ui.commandAt(point, command)) {
-      ui.showCommandFeedback(command);
-      String error;
-      if (!spotify.sendPlaybackCommand(command, current_track.is_playing, error)) {
-        ui.showError(error);
-      } else {
-        delay(120);
-        renderCurrentTrack(false);
-      }
+      executePlaybackCommand(command);
     }
   }
   touch_was_down = touch_is_down;
+}
+
+void handlePhysicalButtons() {
+  PhysicalButton button;
+  if (!physical_buttons.poll(button) || !current_track.available) {
+    return;
+  }
+
+  // On this board the upper key is BOOT (GPIO0) and the lower key is PWR
+  // (AXP2101 PWRON). Give them the same semantics as the on-screen controls.
+  const PlaybackCommand command =
+      button == PhysicalButton::kUpper ? PlaybackCommand::kNext
+                                       : PlaybackCommand::kPrevious;
+  executePlaybackCommand(command);
 }
 
 void showReadyState() {
@@ -182,6 +207,9 @@ void setup() {
   const bool touch_ok = touch.begin();
   Serial.printf("Touch: %s, device id 0x%02X\n", touch_ok ? "ready" : "not found",
                 touch.deviceId());
+  physical_buttons.begin();
+  Serial.printf("Buttons: BOOT ready, PWR via AXP2101 %s\n",
+                physical_buttons.pmuAvailable() ? "ready" : "not found");
 
   // The partition table uses the explicit LittleFS label/subtype.  Passing
   // the label avoids Arduino's legacy default of "spiffs".
@@ -234,6 +262,7 @@ void loop() {
   const uint32_t now = millis();
   if (deadlineReached(next_touch_poll_ms)) {
     next_touch_poll_ms = now + Config::kTouchPollMs;
+    handlePhysicalButtons();
     handleTouch();
   }
 

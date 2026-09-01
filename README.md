@@ -1,5 +1,7 @@
 # ESP32 Spotify Remote — Waveshare 2.06-inch AMOLED
 
+![ESP32 Spotify Remote](assets/esp32-spotify.jpg)
+
 A standalone port of the ESP32 Spotify-remote idea to the
 [Waveshare ESP32-S3-Touch-AMOLED-2.06](https://www.waveshare.com/wiki/ESP32-S3-Touch-AMOLED-2.06).
 It targets the board's **410 × 502 CO5300 QSPI AMOLED** and **FT3168-compatible
