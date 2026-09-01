@@ -27,12 +27,61 @@ bool jpegOutput(int16_t x, int16_t y, uint16_t width, uint16_t height,
 }
 
 constexpr int16_t kHeaderHeight = 42;
-constexpr int16_t kArtTop = 32;
-constexpr int16_t kArtSize = 300;
-constexpr int16_t kMetadataTop = kArtTop + kArtSize;
-constexpr int16_t kProgressTop = 405;
-constexpr int16_t kControlsTop = 426;
+constexpr int16_t kArtTop = 0;
+constexpr int16_t kProgressTop = 410;
+constexpr int16_t kControlsTop = 431;
 constexpr int16_t kControlWidth = BoardDisplay::kWidth / 3;
+constexpr uint8_t kTitleTextSize = 4;
+constexpr uint8_t kArtistTextSize = 3;
+constexpr int16_t kTitleLineHeight = 8 * kTitleTextSize;
+constexpr int16_t kArtistLineHeight = 8 * kArtistTextSize;
+constexpr int16_t kArtToTitleGap = 8;
+constexpr int16_t kTitleToArtistGap = 8;
+constexpr int16_t kArtistToProgressGap = 8;
+constexpr int16_t kArtSize =
+    kProgressTop - kArtToTitleGap - kTitleLineHeight -
+    kTitleToArtistGap - kArtistLineHeight - kArtistToProgressGap;
+constexpr int16_t kArtLeft = (BoardDisplay::kWidth - kArtSize) / 2;
+constexpr int16_t kMetadataTop = kArtTop + kArtSize;
+constexpr int16_t kTitleTop = kMetadataTop + kArtToTitleGap;
+constexpr int16_t kArtistTop = kTitleTop + kTitleLineHeight + kTitleToArtistGap;
+constexpr int16_t kTitleLeft = 10;
+constexpr int16_t kTitleWidth = BoardDisplay::kWidth - 20;
+constexpr int16_t kTitleScrollGap = 24;
+constexpr uint32_t kTitleScrollIntervalMs = 90;
+constexpr uint32_t kTitleScrollPauseMs = 1200;
+constexpr int16_t kTitleScrollStepPx = 4;
+
+constexpr int16_t kPlaceholderDesignSize = 300;
+constexpr int16_t scalePlaceholder(int16_t value) {
+  return static_cast<int16_t>((value * kArtSize + kPlaceholderDesignSize / 2) /
+                              kPlaceholderDesignSize);
+}
+
+// Some CO5300/Arduino_GFX combinations do not render generic fillTriangle()
+// or one-pixel scanlines reliably. Build each triangle from short, filled
+// columns instead; these use the same multi-pixel rectangle primitive as the
+// working pause bars while retaining a clear triangular silhouette.
+void drawPointingTriangle(Arduino_GFX& gfx, int16_t base_x, int16_t tip_x,
+                          int16_t center_y, int16_t height, uint16_t color) {
+  const int16_t left = min(base_x, tip_x);
+  const int16_t right = max(base_x, tip_x);
+  const int16_t width = right - left;
+  const bool points_left = tip_x < base_x;
+  constexpr int16_t kColumnWidth = 3;
+  constexpr int16_t kMinimumHeight = 4;
+
+  for (int16_t x = left; x <= right; x += kColumnWidth) {
+    const int16_t column_width =
+        min<int16_t>(kColumnWidth, right - x + 1);
+    const int16_t distance_from_base = points_left ? x - left : right - x;
+    const int16_t column_height =
+        kMinimumHeight + ((height - kMinimumHeight) * distance_from_base) /
+                             max<int16_t>(width, 1);
+    gfx.fillRect(x, center_y - column_height / 2, column_width,
+                 column_height, color);
+  }
+}
 }  // namespace
 
 AppUi::AppUi(BoardDisplay& display) : display_(display) {}
@@ -157,6 +206,33 @@ void AppUi::updateProgress(const TrackInfo& track) {
   drawProgressBar(progress, track.duration_ms);
 }
 
+void AppUi::updateTitleMarquee() {
+  if (!track_frame_valid_ || screen_mode_ != ScreenMode::kTrack) {
+    return;
+  }
+
+  const int32_t title_width = static_cast<int32_t>(last_track_.title.length()) *
+                              (6 * kTitleTextSize);
+  if (title_width <= kTitleWidth) {
+    return;
+  }
+
+  const uint32_t now = millis();
+  if (static_cast<int32_t>(now - next_title_scroll_ms_) < 0) {
+    return;
+  }
+
+  const int32_t cycle_width = title_width + kTitleScrollGap;
+  title_scroll_offset_ += kTitleScrollStepPx;
+  if (title_scroll_offset_ >= cycle_width) {
+    title_scroll_offset_ = 0;
+    next_title_scroll_ms_ = now + kTitleScrollPauseMs;
+  } else {
+    next_title_scroll_ms_ = now + kTitleScrollIntervalMs;
+  }
+  drawTrackTitle(last_track_.title);
+}
+
 void AppUi::showCommandFeedback(PlaybackCommand command) {
   Arduino_GFX& gfx = display_.gfx();
   int16_t x = 0;
@@ -230,9 +306,8 @@ void AppUi::drawControls(bool is_playing) {
   const int16_t previous_base = previous_tip + kSkipTriangleWidth;
   gfx.fillRect(previous_left, center_y - kSkipHeight / 2, kSkipBarWidth,
                kSkipHeight, RGB565_WHITE);
-  gfx.fillTriangle(previous_tip, center_y, previous_base,
-                   center_y - kSkipHeight / 2, previous_base,
-                   center_y + kSkipHeight / 2, RGB565_WHITE);
+  drawPointingTriangle(gfx, previous_base, previous_tip, center_y,
+                       kSkipHeight, RGB565_WHITE);
 
   // Play / pause.
   const int16_t center_x = kControlWidth + kControlWidth / 2;
@@ -240,25 +315,25 @@ void AppUi::drawControls(bool is_playing) {
     gfx.fillRect(center_x - 13, center_y - 20, 8, 40, RGB565_WHITE);
     gfx.fillRect(center_x + 5, center_y - 20, 8, 40, RGB565_WHITE);
   } else {
-    gfx.fillTriangle(center_x - 13, center_y - 22, center_x - 13,
-                     center_y + 22, center_x + 23, center_y, RGB565_WHITE);
+    drawPointingTriangle(gfx, center_x - 13, center_x + 23, center_y, 44,
+                         RGB565_WHITE);
   }
 
   // Next: a right-pointing triangle followed by a centered bar.
   const int16_t next_left = kControlWidth * 2 + kControlWidth / 2 - kSkipWidth / 2;
   const int16_t next_tip = next_left + kSkipTriangleWidth;
   const int16_t next_bar = next_tip + kSkipGap;
-  gfx.fillTriangle(next_left, center_y - kSkipHeight / 2, next_left,
-                   center_y + kSkipHeight / 2, next_tip, center_y,
-                   RGB565_WHITE);
+  drawPointingTriangle(gfx, next_left, next_tip, center_y, kSkipHeight,
+                       RGB565_WHITE);
   gfx.fillRect(next_bar, center_y - kSkipHeight / 2, kSkipBarWidth,
                kSkipHeight, RGB565_WHITE);
 }
 
 void AppUi::drawTrackArtwork(const char* artwork_path, bool artwork_available) {
   Arduino_GFX& gfx = display_.gfx();
-  gfx.fillRect(55, kArtTop, kArtSize, kArtSize, RGB565_BLACK);
-  if (!artwork_available || !drawJpeg(artwork_path, 55, kArtTop, kArtSize)) {
+  gfx.fillRect(kArtLeft, kArtTop, kArtSize, kArtSize, RGB565_BLACK);
+  if (!artwork_available ||
+      !drawJpeg(artwork_path, kArtLeft, kArtTop, kArtSize)) {
     drawPlaceholderArt();
   }
 }
@@ -267,8 +342,46 @@ void AppUi::drawTrackMetadata(const TrackInfo& track) {
   Arduino_GFX& gfx = display_.gfx();
   gfx.fillRect(0, kMetadataTop, BoardDisplay::kWidth,
                kProgressTop - kMetadataTop, RGB565_BLACK);
-  drawCenteredText(track.title, 360, 2, RGB565_WHITE, 390);
-  drawCenteredText(track.artists, 386, 1, RGB565_LIGHTGREY, 390);
+  title_scroll_offset_ = 0;
+  next_title_scroll_ms_ = millis() + kTitleScrollPauseMs;
+  drawTrackTitle(track.title);
+  drawCenteredText(track.artists, kArtistTop, kArtistTextSize,
+                   RGB565_LIGHTGREY, 390);
+}
+
+void AppUi::drawTrackTitle(const String& title) {
+  Arduino_GFX& gfx = display_.gfx();
+  const int32_t title_width = static_cast<int32_t>(title.length()) *
+                              (6 * kTitleTextSize);
+  gfx.fillRect(kTitleLeft, kTitleTop, kTitleWidth, kTitleLineHeight,
+               RGB565_BLACK);
+  gfx.setTextSize(kTitleTextSize);
+  gfx.setTextColor(RGB565_WHITE, RGB565_BLACK);
+  gfx.setTextWrap(false);
+
+  if (title_width <= kTitleWidth) {
+    const int16_t cursor_x =
+        kTitleLeft + (kTitleWidth - static_cast<int16_t>(title_width)) / 2;
+    gfx.setCursor(cursor_x, kTitleTop);
+    gfx.print(title);
+    gfx.setTextBound(0, 0, BoardDisplay::kWidth, BoardDisplay::kHeight);
+    gfx.setTextWrap(true);
+    return;
+  }
+
+  gfx.setTextBound(kTitleLeft, kTitleTop, kTitleWidth, kTitleLineHeight);
+  const int32_t first_x = kTitleLeft - title_scroll_offset_;
+  gfx.setCursor(static_cast<int16_t>(first_x), kTitleTop);
+  gfx.print(title);
+
+  const int32_t second_x = first_x + title_width + kTitleScrollGap;
+  if (second_x < kTitleLeft + kTitleWidth) {
+    gfx.setCursor(static_cast<int16_t>(second_x), kTitleTop);
+    gfx.print(title);
+  }
+
+  gfx.setTextBound(0, 0, BoardDisplay::kWidth, BoardDisplay::kHeight);
+  gfx.setTextWrap(true);
 }
 
 void AppUi::drawProgressBar(uint32_t progress_ms, uint32_t duration_ms) {
@@ -289,12 +402,23 @@ void AppUi::drawProgressBar(uint32_t progress_ms, uint32_t duration_ms) {
 
 void AppUi::drawPlaceholderArt() {
   Arduino_GFX& gfx = display_.gfx();
-  gfx.fillRoundRect(55, kArtTop, kArtSize, kArtSize, 16, 0x2104);
-  gfx.fillCircle(175, kArtTop + 183, 36, RGB565_SPOTIFY_GREEN);
-  gfx.fillCircle(270, kArtTop + 158, 36, RGB565_SPOTIFY_GREEN);
-  gfx.fillRect(206, kArtTop + 68, 12, 118, RGB565_SPOTIFY_GREEN);
-  gfx.fillRect(301, kArtTop + 43, 12, 118, RGB565_SPOTIFY_GREEN);
-  gfx.fillRect(212, kArtTop + 43, 95, 14, RGB565_SPOTIFY_GREEN);
+  gfx.fillRoundRect(kArtLeft, kArtTop, kArtSize, kArtSize,
+                    scalePlaceholder(16), 0x2104);
+  gfx.fillCircle(kArtLeft + scalePlaceholder(120),
+                 kArtTop + scalePlaceholder(183), scalePlaceholder(36),
+                 RGB565_SPOTIFY_GREEN);
+  gfx.fillCircle(kArtLeft + scalePlaceholder(215),
+                 kArtTop + scalePlaceholder(158), scalePlaceholder(36),
+                 RGB565_SPOTIFY_GREEN);
+  gfx.fillRect(kArtLeft + scalePlaceholder(151),
+               kArtTop + scalePlaceholder(68), scalePlaceholder(12),
+               scalePlaceholder(118), RGB565_SPOTIFY_GREEN);
+  gfx.fillRect(kArtLeft + scalePlaceholder(246),
+               kArtTop + scalePlaceholder(43), scalePlaceholder(12),
+               scalePlaceholder(118), RGB565_SPOTIFY_GREEN);
+  gfx.fillRect(kArtLeft + scalePlaceholder(157),
+               kArtTop + scalePlaceholder(43), scalePlaceholder(95),
+               scalePlaceholder(14), RGB565_SPOTIFY_GREEN);
 }
 
 void AppUi::drawCenteredText(const String& text, int16_t y, uint8_t size,

@@ -246,5 +246,9 @@ void loop() {
     ui.updateProgress(current_track);
   }
 
+  if (current_track.available) {
+    ui.updateTitleMarquee();
+  }
+
   delay(2);
 }

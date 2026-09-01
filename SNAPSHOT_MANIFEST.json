@@ -72,13 +72,13 @@
     },
     {
       "path": "src/AppUi.cpp",
-      "size": 12414,
-      "sha256": "fbb400a63e62d899305a6a3fb4d797fc2fa88eb07d18a496322c5848a7d87056"
+      "size": 17319,
+      "sha256": "94e62d75b36a9e3a7652451d309e15f5d5c2e53e5ef644206a2664c751aae24b"
     },
     {
       "path": "src/AppUi.h",
-      "size": 1910,
-      "sha256": "7e3829183f94e9852ba88066ed6b13f19ec900912b490c201a4b551cccb9d9ca"
+      "size": 2057,
+      "sha256": "3cdc3b8925e30c0185eefa2dcc62d3180726f1525672b68e368e948d40376309"
     },
     {
       "path": "src/BoardDisplay.cpp",
@@ -127,8 +127,8 @@
     },
     {
       "path": "src/main.cpp",
-      "size": 6813,
-      "sha256": "2cb106bb90e4ff544bf39edbc641e760ecb56a0ab4d6962151cb9de0f5eacd7a"
+      "size": 6880,
+      "sha256": "6592abad0d43814ec469d5e24c392f2aaa20e6d1dccbbbbf032afa4d36356953"
     },
     {
       "path": "tools/check_repository.py",

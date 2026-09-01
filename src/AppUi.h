@@ -19,6 +19,7 @@ class AppUi {
   void renderTrack(const TrackInfo& track, const char* artwork_path,
                    bool artwork_available);
   void updateProgress(const TrackInfo& track);
+  void updateTitleMarquee();
   void showCommandFeedback(PlaybackCommand command);
 
   bool commandAt(const TouchPoint& point, PlaybackCommand& command) const;
@@ -39,6 +40,7 @@ class AppUi {
   void drawControls(bool is_playing);
   void drawTrackArtwork(const char* artwork_path, bool artwork_available);
   void drawTrackMetadata(const TrackInfo& track);
+  void drawTrackTitle(const String& title);
   void drawProgressBar(uint32_t progress_ms, uint32_t duration_ms);
   void drawPlaceholderArt();
   void drawCenteredText(const String& text, int16_t y, uint8_t size,
@@ -52,6 +54,8 @@ class AppUi {
   bool track_frame_valid_ = false;
   bool controls_dirty_ = false;
   bool last_artwork_available_ = false;
+  int32_t title_scroll_offset_ = 0;
+  uint32_t next_title_scroll_ms_ = 0;
   ScreenMode screen_mode_ = ScreenMode::kUnknown;
   String status_heading_;
   String status_detail_;
