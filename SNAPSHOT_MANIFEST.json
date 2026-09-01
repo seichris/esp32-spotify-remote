@@ -63,12 +63,12 @@
     {
       "path": "partitions/waveshare_16mb.csv",
       "size": 284,
-      "sha256": "7ed3473af99d2776f40eafa014de4aede5fa2ae6bae2dcc4221557dc6587aab4"
+      "sha256": "b0cdc4e78b09a4c334d2bb8e0522c66c6a8e8053ea4066bf0314291239fbd5eb"
     },
     {
       "path": "platformio.ini",
       "size": 1129,
-      "sha256": "d568d0789355af7287a0c61bbba9214fe6418d3bb0197f2df37e921aa77a31c7"
+      "sha256": "f9154a408146d6804a1672b95b355205d9a19671a3e8d561ce5461f05031bb37"
     },
     {
       "path": "src/AppUi.cpp",
@@ -102,8 +102,8 @@
     },
     {
       "path": "src/SpotifyClient.cpp",
-      "size": 15598,
-      "sha256": "0beb7d5ba0c95cd9fd808bfcd50affdd13b88c5512ab32eab3698f581c7ea202"
+      "size": 16697,
+      "sha256": "2541035345f89ee740153e91540d608cfc418ba6bcb2d6080d92ac675d221add"
     },
     {
       "path": "src/SpotifyClient.h",
@@ -127,8 +127,8 @@
     },
     {
       "path": "src/main.cpp",
-      "size": 6048,
-      "sha256": "bef1ec1cefc54e2dc22fcb78d6d7ca65c84ab336ec838f7350449288ed4f2d4d"
+      "size": 6213,
+      "sha256": "47c06e6272ca97dc4901c2b46a0993bd55cdcb67f9dc49eca2a5bc92e9c21991"
     },
     {
       "path": "tools/check_repository.py",

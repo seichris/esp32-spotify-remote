@@ -206,7 +206,33 @@ bool SpotifyClient::sendPlaybackCommand(PlaybackCommand command,
       response.status == HTTP_CODE_ACCEPTED) {
     return true;
   }
-  error = "Spotify playback command failed (HTTP " + String(response.status) + ").";
+
+  // Spotify puts the useful diagnosis in the JSON error body (for example,
+  // "No active device found" or "Player command failed: Premium required").
+  // Keep the status as the stable fallback, but surface that short message in
+  // both the UI and serial output so a failed control is actionable.
+  String detail = "Spotify playback command failed (HTTP " + String(response.status);
+  String reason;
+  if (!response.body.isEmpty() && response.body.length() <= 2048) {
+    JsonDocument document;
+    if (!deserializeJson(document, response.body)) {
+      const char* message = document["error"]["message"] | "";
+      const char* error_reason = document["error"]["reason"] | "";
+      if (message[0] != '\0') {
+        reason = message;
+      } else if (error_reason[0] != '\0') {
+        reason = error_reason;
+      }
+    }
+  }
+  if (!reason.isEmpty()) {
+    detail += ": ";
+    detail += reason;
+  }
+  detail += ").";
+  error = detail;
+  Serial.printf("Spotify playback command failed HTTP %d%s\n", response.status,
+                reason.isEmpty() ? "" : (String(": ") + reason).c_str());
   return false;
 }
 
@@ -407,12 +433,14 @@ SpotifyClient::ApiResponse SpotifyClient::requestOnce(
 
   if (strcmp(method, "GET") == 0) {
     response.status = http.GET();
-  } else if (body.isEmpty()) {
-    response.status = http.sendRequest(method);
   } else {
-    response.status = http.sendRequest(method,
-                                       reinterpret_cast<const uint8_t*>(body.c_str()),
-                                       body.length());
+    // Spotify's playback endpoints use empty POST/PUT bodies.  HTTPClient's
+    // no-payload overload omits Content-Length entirely, which Spotify
+    // rejects with HTTP 411.  Send an explicit zero-length body instead.
+    if (body.isEmpty()) {
+      http.addHeader("Content-Length", "0");
+    }
+    response.status = http.sendRequest(method, body);
   }
 
   response.retry_after = http.header("Retry-After");

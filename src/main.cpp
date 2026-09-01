@@ -168,7 +168,9 @@ void setup() {
   Serial.printf("Touch: %s, device id 0x%02X\n", touch_ok ? "ready" : "not found",
                 touch.deviceId());
 
-  if (!LittleFS.begin(true)) {
+  // The partition table uses the explicit LittleFS label/subtype.  Passing
+  // the label avoids Arduino's legacy default of "spiffs".
+  if (!LittleFS.begin(true, "/littlefs", 10, "littlefs")) {
     ui.showError("LittleFS initialization failed");
     while (true) {
       delay(1000);
