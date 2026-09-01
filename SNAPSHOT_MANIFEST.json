@@ -1,0 +1,144 @@
+{
+  "name": "esp32-spotify-remote-waveshare-amoled-2.06",
+  "generated_at_utc": "2026-09-01T08:00:00Z",
+  "target": "Waveshare ESP32-S3-Touch-AMOLED-2.06",
+  "status": "source snapshot; static repository checks passed; physical-board validation still required",
+  "file_count": 27,
+  "files": [
+    {
+      "path": ".github/workflows/platformio.yml",
+      "size": 604,
+      "sha256": "456d1d9dc81a1fa3071cee0f66338ea62af10168f81ae85a5101ffd2046a721c"
+    },
+    {
+      "path": ".gitignore",
+      "size": 69,
+      "sha256": "2956015e6df48fdbe5303071aa321985e90e58655a94cb7da326fb59bd2a8050"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1073,
+      "sha256": "67b7c0dfe63efd05b225ba2078ea73492a83973d07192b14320c1ebeaf0fe05e"
+    },
+    {
+      "path": "NOTICE.md",
+      "size": 600,
+      "sha256": "4f0421419a836d39295194351c8f6c201352e2f8fe2fb62c92f51d070e77974f"
+    },
+    {
+      "path": "README.md",
+      "size": 4331,
+      "sha256": "7e79bf516e4db45fc071890aa94fc9cb388aacd782674e70f95500970f05df40"
+    },
+    {
+      "path": "data/README.md",
+      "size": 266,
+      "sha256": "c1a4118cf87e152ef678bebb7ec4764d9887683b6af1f8260445f229234c8e86"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "size": 1431,
+      "sha256": "5b15284c01a1def65f6379d3c443cc6922419435e866684b80a5be9d6b52d83f"
+    },
+    {
+      "path": "docs/HARDWARE.md",
+      "size": 692,
+      "sha256": "ac09e1152695e2eed8fd1c9b12441c4d9c3cd6564b8a14634ac1666100ef8fed"
+    },
+    {
+      "path": "docs/TESTING.md",
+      "size": 933,
+      "sha256": "ad9c03b79f84c1c0377983280ba8fd5585cee9530f7520e1044ab8ada575c4b7"
+    },
+    {
+      "path": "include/Config.h",
+      "size": 916,
+      "sha256": "8e633d4e1134b1fc7a45b8e72a87ab09bbd100603c3a2097ec4013899cf9f235"
+    },
+    {
+      "path": "include/secrets.example.h",
+      "size": 390,
+      "sha256": "52166f84daf3672275e76ab0e620c5619cd50dd1266795947d0f96b62129b232"
+    },
+    {
+      "path": "partitions/waveshare_16mb.csv",
+      "size": 284,
+      "sha256": "7ed3473af99d2776f40eafa014de4aede5fa2ae6bae2dcc4221557dc6587aab4"
+    },
+    {
+      "path": "platformio.ini",
+      "size": 1129,
+      "sha256": "d568d0789355af7287a0c61bbba9214fe6418d3bb0197f2df37e921aa77a31c7"
+    },
+    {
+      "path": "src/AppUi.cpp",
+      "size": 9216,
+      "sha256": "4cd32ab6deb8af3e78c2386bf5916bb44544fe3dff17ba2b007079a0d866a8c5"
+    },
+    {
+      "path": "src/AppUi.h",
+      "size": 1364,
+      "sha256": "eff6d3187308ef324969668c3061cac5c339157b5cee1617408019ee1de82d69"
+    },
+    {
+      "path": "src/BoardDisplay.cpp",
+      "size": 1284,
+      "sha256": "3269b9703a524b864c6b6b15523b0401235d8a240fc665191ca23f53100bcb98"
+    },
+    {
+      "path": "src/BoardDisplay.h",
+      "size": 509,
+      "sha256": "9ce8ae39f1f0c996e04b6e7584c6cb9158d266b34246ddf4013e60b61d7f8d7a"
+    },
+    {
+      "path": "src/OAuthPortal.cpp",
+      "size": 4508,
+      "sha256": "ab234d0a574d54f90fbfbb559db66c4ef28a5470927e280343c2c454c03a9986"
+    },
+    {
+      "path": "src/OAuthPortal.h",
+      "size": 510,
+      "sha256": "8de9cb2bf1a179e4376a9ade0639f81495643f33051aa0c9d472673ea9d3d55f"
+    },
+    {
+      "path": "src/SpotifyClient.cpp",
+      "size": 15598,
+      "sha256": "0beb7d5ba0c95cd9fd808bfcd50affdd13b88c5512ab32eab3698f581c7ea202"
+    },
+    {
+      "path": "src/SpotifyClient.h",
+      "size": 2223,
+      "sha256": "d92724eb29ad434e1aef30d57030c4850e1821392d8fa223042be34db7eef759"
+    },
+    {
+      "path": "src/TlsClient.h",
+      "size": 397,
+      "sha256": "51f2f50d774148c6fe7f694f0878e02dcd10f6b4a9da1c28f3b72812f099476f"
+    },
+    {
+      "path": "src/TouchController.cpp",
+      "size": 2170,
+      "sha256": "cbd0363df102fa6c966dff604005f5ea5c668d4174fa9d36d00121ee5128f648"
+    },
+    {
+      "path": "src/TouchController.h",
+      "size": 404,
+      "sha256": "8f7a933260bf6f0bbe953ee8f89aa059788a03799f02f7aa0ccb156bad79fa77"
+    },
+    {
+      "path": "src/main.cpp",
+      "size": 6048,
+      "sha256": "bef1ec1cefc54e2dc22fcb78d6d7ca65c84ab336ec838f7350449288ed4f2d4d"
+    },
+    {
+      "path": "tools/check_repository.py",
+      "size": 1433,
+      "sha256": "8e47e0cb67288d9b6cc3831d9d20ee35d3f2c947573349dc06cb5aaaaca95010"
+    },
+    {
+      "path": "tools/spotify_oauth_bridge.py",
+      "size": 5048,
+      "sha256": "b72726c779fdcfbfc5e19a3d3459c400e01b4459ad104c21963bfd874e3b41b3"
+    }
+  ]
+}

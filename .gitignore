@@ -1,0 +1,7 @@
+.pio/
+.vscode/
+.idea/
+.DS_Store
+include/secrets.h
+*.log
+__pycache__/
