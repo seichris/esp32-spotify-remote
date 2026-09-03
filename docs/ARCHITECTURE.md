@@ -2,14 +2,19 @@
 
 The firmware intentionally separates board-specific I/O from Spotify behavior:
 
-- `BoardDisplay` owns the CO5300 QSPI AMOLED and its brightness control.
-- `TouchController` talks directly to the FT3168-compatible controller over I2C.
+- `BoardDisplay` owns the CO5300 QSPI AMOLED, brightness, and software rotation
+  for the two orientations that require row/column exchange.
+- `OrientationSensor` debounces four-side orientation from the QMI8658
+  accelerometer while retaining the current orientation when the board is flat.
+- `TouchController` talks directly to the FT3168-compatible controller over I2C
+  and maps native touch coordinates into the current display orientation.
 - `PhysicalButtons` debounces the BOOT GPIO and reads the AXP2101 PWR-key event.
 - `SpotifyClient` owns PKCE, refresh-token persistence, verified HTTPS requests,
   playback state, controls, and album-art downloads.
 - `OAuthPortal` serves the local setup page and accepts the callback forwarded by
   the loopback helper.
-- `AppUi` renders the 410 × 502 portrait interface and maps touch zones to actions.
+- `AppUi` selects a portrait or landscape layout and maps touch zones to actions.
+  Landscape places a shorter album image beside the track metadata.
 
 ## Authorization flow
 

@@ -12,6 +12,7 @@ class TouchController {
  public:
   bool begin();
   bool read(TouchPoint& point);
+  void setRotation(uint8_t rotation) { rotation_ = rotation & 3; }
   uint8_t deviceId() const { return device_id_; }
 
  private:
@@ -19,4 +20,5 @@ class TouchController {
   bool writeRegister(uint8_t reg, uint8_t value);
 
   uint8_t device_id_ = 0xFF;
+  uint8_t rotation_ = 0;
 };
