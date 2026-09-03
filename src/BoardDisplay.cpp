@@ -87,28 +87,44 @@ class RotatedGfx : public Arduino_GFX {
       return;
     }
 
-    // JPEG decoder blocks are normally 16 pixels wide. A full display row is
-    // the upper bound, so this stays small even for other callers.
-    uint16_t reversed[BoardDisplay::kHeight];
-    for (int16_t row = 0; row < h; ++row) {
-      PixelPointer source = bitmap + static_cast<int32_t>(row) * w;
-      if (_rotation == 1) {
-        panel_.draw16bitRGBBitmap(BoardDisplay::kWidth - y - row - 1, x,
-                                  source, 1, w);
-      } else {
-        for (int16_t column = 0; column < w; ++column) {
-          reversed[column] = source[w - column - 1];
+    // JPEG decoder blocks and the marquee canvas both arrive as RGB565
+    // bitmaps. Rotate them into short horizontal panel scanlines. In
+    // particular, avoid one-pixel-wide vertical address windows: the CO5300
+    // accepts them but does not reliably advance streamed bitmap data through
+    // them on this panel.
+    uint16_t scanline[BoardDisplay::kHeight];
+    if (_rotation == 1) {
+      for (int16_t column = 0; column < w; ++column) {
+        for (int16_t row = 0; row < h; ++row) {
+          scanline[h - row - 1] =
+              bitmap[static_cast<int32_t>(row) * w + column];
         }
-        if (_rotation == 2) {
-          panel_.draw16bitRGBBitmap(BoardDisplay::kWidth - x - w,
-                                    BoardDisplay::kHeight - y - row - 1,
-                                    reversed, w, 1);
-        } else {
-          panel_.draw16bitRGBBitmap(y + row,
-                                    BoardDisplay::kHeight - x - w, reversed,
-                                    1, w);
-        }
+        panel_.draw16bitRGBBitmap(BoardDisplay::kWidth - y - h, x + column,
+                                  scanline, h, 1);
       }
+      return;
+    }
+
+    if (_rotation == 2) {
+      for (int16_t row = 0; row < h; ++row) {
+        PixelPointer source = bitmap + static_cast<int32_t>(row) * w;
+        for (int16_t column = 0; column < w; ++column) {
+          scanline[w - column - 1] = source[column];
+        }
+        panel_.draw16bitRGBBitmap(BoardDisplay::kWidth - x - w,
+                                  BoardDisplay::kHeight - y - row - 1,
+                                  scanline, w, 1);
+      }
+      return;
+    }
+
+    for (int16_t column = 0; column < w; ++column) {
+      for (int16_t row = 0; row < h; ++row) {
+        scanline[row] = bitmap[static_cast<int32_t>(row) * w + column];
+      }
+      panel_.draw16bitRGBBitmap(y,
+                                BoardDisplay::kHeight - x - column - 1,
+                                scanline, h, 1);
     }
   }
 

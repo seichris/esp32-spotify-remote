@@ -4,10 +4,12 @@ The source and configuration are compile-oriented, but a physical board remains
 necessary for final validation.
 
 1. Flash the filesystem and application, then confirm the boot screen is upright.
-2. Hold each of the four sides uppermost for at least half a second and confirm
-   the display becomes upright without clipped or mirrored content.
+2. Rest the device on each edge for at least half a second and confirm the UI
+   bottom moves to that exact edge: native short edge, USB/buttons long edge,
+   opposite short edge, then opposite long edge.
 3. In both landscape orientations, confirm the 286-pixel album image appears to
-   the left of the title and artist and does not overlap progress or controls.
+   the left of both the title and artist and does not overlap progress or
+   controls. Rotate repeatedly and confirm neither bitmap disappears.
 4. Verify all four display edges and the 22-pixel controller offset.
 5. In every orientation, touch each playback button and confirm its hit box
    matches the rendered control.

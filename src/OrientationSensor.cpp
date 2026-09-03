@@ -79,13 +79,14 @@ bool OrientationSensor::classify(float x, float y, uint8_t& rotation) const {
     return false;
   }
 
-  // On this board +Y points toward USB and +X toward the right edge. A static
-  // accelerometer reports the support force (opposite gravity), so native
-  // portrait is USB-down / negative Y.
-  if (abs_y > abs_x) {
-    rotation = y < 0.0f ? 0 : 2;
+  // Physical-device calibration for the 2.06-inch board. The native portrait
+  // bottom is +X; the USB/buttons long edge is -Y. A static accelerometer
+  // reports support force opposite gravity, so map the dominant axis directly
+  // to the display edge that is physically down.
+  if (abs_x > abs_y) {
+    rotation = x > 0.0f ? 0 : 2;
   } else {
-    rotation = x < 0.0f ? 1 : 3;
+    rotation = y > 0.0f ? 1 : 3;
   }
   return true;
 }

@@ -31,6 +31,9 @@ match the active display orientation.
 The QMI8658 shares the touch I2C bus. Four-side rotation requires a dominant
 in-plane gravity axis for 450 ms. Face-up, face-down, diagonal, and actively
 moving positions retain the last stable orientation instead of oscillating.
+Physical-device calibration maps +X to the native portrait bottom, -X to the
+opposite short edge, -Y to the USB/buttons long edge, and +Y to the opposite
+long edge.
 
 The BOOT key is read directly from GPIO0. The PWR key is connected to the
 AXP2101 power-management IC rather than to a spare ESP32 GPIO; its short-press
