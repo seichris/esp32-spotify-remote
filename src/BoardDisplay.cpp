@@ -1,5 +1,6 @@
 #include "BoardDisplay.h"
 
+#include <esp_heap_caps.h>
 #include <new>
 
 namespace {
@@ -87,45 +88,68 @@ class RotatedGfx : public Arduino_GFX {
       return;
     }
 
-    // JPEG decoder blocks and the marquee canvas both arrive as RGB565
-    // bitmaps. Rotate them into short horizontal panel scanlines. In
-    // particular, avoid one-pixel-wide vertical address windows: the CO5300
-    // accepts them but does not reliably advance streamed bitmap data through
-    // them on this panel.
-    uint16_t scanline[BoardDisplay::kHeight];
-    if (_rotation == 1) {
-      for (int16_t column = 0; column < w; ++column) {
-        for (int16_t row = 0; row < h; ++row) {
-          scanline[h - row - 1] =
-              bitmap[static_cast<int32_t>(row) * w + column];
-        }
-        panel_.draw16bitRGBBitmap(BoardDisplay::kWidth - y - h, x + column,
-                                  scanline, h, 1);
-      }
-      return;
-    }
+    // The CO5300 reliably streams RGB pixels through ordinary multi-row
+    // windows, but not through the one-row/one-column windows that a naive
+    // software rotation produces. Build one transformed rectangle in PSRAM,
+    // then use the exact same panel path as native rotation.
+    const int16_t output_width = (_rotation & 1) ? h : w;
+    const int16_t output_height = (_rotation & 1) ? w : h;
+    const size_t pixel_count = static_cast<size_t>(w) * h;
+    uint16_t* transformed = static_cast<uint16_t*>(heap_caps_malloc(
+        pixel_count * sizeof(uint16_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
 
-    if (_rotation == 2) {
+    if (transformed == nullptr) {
+      // Allocation failure should degrade drawing speed, not remove the title
+      // or artwork. This path uses the primitive that already renders text and
+      // shapes correctly in every orientation.
+      panel_.startWrite();
       for (int16_t row = 0; row < h; ++row) {
-        PixelPointer source = bitmap + static_cast<int32_t>(row) * w;
         for (int16_t column = 0; column < w; ++column) {
-          scanline[w - column - 1] = source[column];
+          int16_t panel_x = 0;
+          int16_t panel_y = 0;
+          mapPoint(x + column, y + row, panel_x, panel_y);
+          panel_.writePixelPreclipped(
+              panel_x, panel_y,
+              bitmap[static_cast<int32_t>(row) * w + column]);
         }
-        panel_.draw16bitRGBBitmap(BoardDisplay::kWidth - x - w,
-                                  BoardDisplay::kHeight - y - row - 1,
-                                  scanline, w, 1);
       }
+      panel_.endWrite();
       return;
     }
 
-    for (int16_t column = 0; column < w; ++column) {
-      for (int16_t row = 0; row < h; ++row) {
-        scanline[row] = bitmap[static_cast<int32_t>(row) * w + column];
+    for (int16_t row = 0; row < h; ++row) {
+      for (int16_t column = 0; column < w; ++column) {
+        const uint16_t color =
+            bitmap[static_cast<int32_t>(row) * w + column];
+        int32_t destination = 0;
+        if (_rotation == 1) {
+          destination = static_cast<int32_t>(column) * output_width +
+                        (h - row - 1);
+        } else if (_rotation == 2) {
+          destination = static_cast<int32_t>(h - row - 1) * output_width +
+                        (w - column - 1);
+        } else {
+          destination = static_cast<int32_t>(w - column - 1) * output_width +
+                        row;
+        }
+        transformed[destination] = color;
       }
-      panel_.draw16bitRGBBitmap(y,
-                                BoardDisplay::kHeight - x - column - 1,
-                                scanline, h, 1);
     }
+
+    int16_t panel_x = 0;
+    int16_t panel_y = 0;
+    mapPoint(x, y, panel_x, panel_y);
+    if (_rotation == 1) {
+      panel_x -= h - 1;
+    } else if (_rotation == 2) {
+      panel_x -= w - 1;
+      panel_y -= h - 1;
+    } else {
+      panel_y -= w - 1;
+    }
+    panel_.draw16bitRGBBitmap(panel_x, panel_y, transformed, output_width,
+                              output_height);
+    heap_caps_free(transformed);
   }
 
   void mapPoint(int16_t x, int16_t y, int16_t& panel_x,

@@ -3,7 +3,10 @@
 The firmware intentionally separates board-specific I/O from Spotify behavior:
 
 - `BoardDisplay` owns the CO5300 QSPI AMOLED, brightness, and software rotation
-  for the two orientations that require row/column exchange.
+  for the two orientations that require row/column exchange. RGB565 bitmaps are
+  transformed as complete PSRAM rectangles before one panel transfer because
+  the CO5300 does not reliably stream varied pixels through single-row or
+  single-column rotated windows.
 - `OrientationSensor` debounces four-side orientation from the QMI8658
   accelerometer while retaining the current orientation when the board is flat.
 - `TouchController` talks directly to the FT3168-compatible controller over I2C
