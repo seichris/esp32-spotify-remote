@@ -14,7 +14,9 @@ The firmware intentionally separates board-specific I/O from Spotify behavior:
 - `OAuthPortal` serves the local setup page and accepts the callback forwarded by
   the loopback helper.
 - `AppUi` selects a portrait or landscape layout and maps touch zones to actions.
-  Landscape places a shorter album image beside the track metadata.
+  Landscape places a shorter album image beside the track metadata. Album JPEGs
+  decode into a scaled PSRAM RGB565 buffer before one rotation-aware panel
+  transfer, so decoder-block lifetime and panel orientation stay independent.
 
 ## Authorization flow
 

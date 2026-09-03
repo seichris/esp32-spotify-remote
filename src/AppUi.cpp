@@ -3,28 +3,35 @@
 #include <LittleFS.h>
 #include <TJpg_Decoder.h>
 #include <canvas/Arduino_Canvas.h>
+#include <esp_heap_caps.h>
 #include <new>
+#include <string.h>
 
 #include "Config.h"
 
 namespace {
-Arduino_GFX* jpeg_target = nullptr;
-int16_t jpeg_offset_x = 0;
-int16_t jpeg_offset_y = 0;
-int16_t jpeg_limit_x = BoardDisplay::kWidth;
-int16_t jpeg_limit_y = BoardDisplay::kHeight;
+uint16_t* jpeg_buffer = nullptr;
+int16_t jpeg_buffer_width = 0;
+int16_t jpeg_buffer_height = 0;
 
 bool jpegOutput(int16_t x, int16_t y, uint16_t width, uint16_t height,
                 uint16_t* bitmap) {
-  if (jpeg_target == nullptr) {
+  if (jpeg_buffer == nullptr) {
     return false;
   }
-  x += jpeg_offset_x;
-  y += jpeg_offset_y;
-  if (x >= jpeg_limit_x || y >= jpeg_limit_y) {
-    return false;
+  if (x >= jpeg_buffer_width || y >= jpeg_buffer_height) {
+    return true;
   }
-  jpeg_target->draw16bitRGBBitmap(x, y, bitmap, width, height);
+
+  const int16_t copy_width =
+      min<int16_t>(width, jpeg_buffer_width - x);
+  const int16_t copy_height =
+      min<int16_t>(height, jpeg_buffer_height - y);
+  for (int16_t row = 0; row < copy_height; ++row) {
+    memcpy(jpeg_buffer + static_cast<int32_t>(y + row) * jpeg_buffer_width + x,
+           bitmap + static_cast<int32_t>(row) * width,
+           static_cast<size_t>(copy_width) * sizeof(uint16_t));
+  }
   return true;
 }
 
@@ -612,13 +619,30 @@ bool AppUi::drawJpeg(const char* path, int16_t target_x, int16_t target_y,
   TJpgDec.setJpgScale(scale);
   const int16_t scaled_width = width / scale;
   const int16_t scaled_height = height / scale;
-  jpeg_target = &display_.gfx();
-  jpeg_offset_x = target_x + (target_size - scaled_width) / 2;
-  jpeg_offset_y = target_y + (target_size - scaled_height) / 2;
-  jpeg_limit_x = target_x + target_size;
-  jpeg_limit_y = target_y + target_size;
+  const size_t pixel_count =
+      static_cast<size_t>(scaled_width) * scaled_height;
+  uint16_t* decoded = static_cast<uint16_t*>(heap_caps_malloc(
+      pixel_count * sizeof(uint16_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
+  if (decoded == nullptr) {
+    Serial.println("Artwork decode buffer unavailable");
+    return false;
+  }
+  memset(decoded, 0, pixel_count * sizeof(uint16_t));
+
+  jpeg_buffer = decoded;
+  jpeg_buffer_width = scaled_width;
+  jpeg_buffer_height = scaled_height;
 
   const JRESULT result = TJpgDec.drawFsJpg(0, 0, path, LittleFS);
-  jpeg_target = nullptr;
+  jpeg_buffer = nullptr;
+  jpeg_buffer_width = 0;
+  jpeg_buffer_height = 0;
+  if (result == JDR_OK) {
+    display_.gfx().draw16bitRGBBitmap(
+        target_x + (target_size - scaled_width) / 2,
+        target_y + (target_size - scaled_height) / 2, decoded, scaled_width,
+        scaled_height);
+  }
+  heap_caps_free(decoded);
   return result == JDR_OK;
 }

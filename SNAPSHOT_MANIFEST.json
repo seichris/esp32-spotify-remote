@@ -1,6 +1,6 @@
 {
   "name": "esp32-spotify-remote-waveshare-amoled-2.06",
-  "generated_at_utc": "2026-09-03T11:38:21Z",
+  "generated_at_utc": "2026-09-03T12:06:27Z",
   "target": "Waveshare ESP32-S3-Touch-AMOLED-2.06",
   "status": "source snapshot; static repository checks passed; physical-board validation still required",
   "file_count": 32,
@@ -42,8 +42,8 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "size": 1869,
-      "sha256": "b6a6df7dfa1c000ada0f8c4074d90eba94da22270aad8e6414f327a81c882bff"
+      "size": 2034,
+      "sha256": "590f285f560da25e060cccdbb587456e0d5871e9e43290ff25435c29a0408222"
     },
     {
       "path": "docs/HARDWARE.md",
@@ -77,8 +77,8 @@
     },
     {
       "path": "src/AppUi.cpp",
-      "size": 21821,
-      "sha256": "190c71381716145d096506f9c0448626cb0f29d226c5141617ef162382abfd95"
+      "size": 22648,
+      "sha256": "9ae24f1f238777d453abba3df97bd256abe2b7958516ee6e564893e63fe4d13b"
     },
     {
       "path": "src/AppUi.h",
