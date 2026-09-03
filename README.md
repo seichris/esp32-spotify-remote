@@ -16,7 +16,8 @@ not a hidden or inaccessible GitHub fork.
 ## Features
 
 - Automatic four-side rotation using the onboard QMI8658 accelerometer
-- Portrait and landscape layouts for the 410 × 502 AMOLED
+- Portrait and landscape layouts for the 410 × 502 AMOLED, with a full
+  320-pixel cover in landscape
 - Previous, play/pause, and next touch controls
 - Current title, artists, album artwork, playback state, and progress
 - Spotify Authorization Code **with PKCE**; no client secret in firmware

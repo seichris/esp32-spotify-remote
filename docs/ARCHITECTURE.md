@@ -17,7 +17,9 @@ The firmware intentionally separates board-specific I/O from Spotify behavior:
 - `OAuthPortal` serves the local setup page and accepts the callback forwarded by
   the loopback helper.
 - `AppUi` selects a portrait or landscape layout and maps touch zones to actions.
-  Landscape places a shorter album image beside the track metadata. Album JPEGs
+  Landscape places a 320-pixel album image beside the track metadata. This size
+  matches the decoder's half-scale output for Spotify's usual 640-pixel cover,
+  avoiding a further drop to 160 pixels and a large empty border. Album JPEGs
   decode into a scaled PSRAM RGB565 buffer before one rotation-aware panel
   transfer, so decoder-block lifetime and panel orientation stay independent.
 

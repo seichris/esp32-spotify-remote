@@ -7,7 +7,7 @@ necessary for final validation.
 2. Rest the device on each edge for at least half a second and confirm the UI
    bottom moves to that exact edge: native short edge, USB/buttons long edge,
    opposite short edge, then opposite long edge.
-3. In both landscape orientations, confirm the 286-pixel album image appears to
+3. In both landscape orientations, confirm the 320-pixel album image appears to
    the left of both the title and artist and does not overlap progress or
    controls. Rotate repeatedly and confirm neither bitmap disappears.
 4. Verify all four display edges and the 22-pixel controller offset.

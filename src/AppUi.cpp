@@ -72,17 +72,20 @@ UiLayout makeLayout(const Arduino_GFX& gfx) {
   const int16_t height = gfx.height();
   const bool landscape = width > height;
   if (landscape) {
-    constexpr int16_t art_size = 286;
-    constexpr int16_t metadata_left = 306;
+    // Spotify normally supplies a 640 px cover. TJpg_Decoder scales by powers
+    // of two, so a 320 px target preserves the 320 px decode instead of
+    // dropping to 160 px and leaving a large empty border.
+    constexpr int16_t art_size = 320;
+    constexpr int16_t metadata_left = 330;
     return {width, height, true,
             42,
-            10, 8, art_size,
+            0, 0, art_size,
             8,
             metadata_left, 102,
             static_cast<int16_t>(width - metadata_left - 10), 24, 3,
             151, 2,
-            static_cast<int16_t>(height - 92),
-            static_cast<int16_t>(height - 71),
+            static_cast<int16_t>(height - 82),
+            static_cast<int16_t>(height - 61),
             static_cast<int16_t>(width / 3)};
   }
 
