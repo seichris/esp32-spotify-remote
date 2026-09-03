@@ -53,8 +53,24 @@ bool TouchController::read(TouchPoint& point) {
     return false;
   }
 
-  point.x = x;
-  point.y = y;
+  switch (rotation_) {
+    case 1:
+      point.x = y;
+      point.y = kDisplayWidth - x - 1;
+      break;
+    case 2:
+      point.x = kDisplayWidth - x - 1;
+      point.y = kDisplayHeight - y - 1;
+      break;
+    case 3:
+      point.x = kDisplayHeight - y - 1;
+      point.y = x;
+      break;
+    default:
+      point.x = x;
+      point.y = y;
+      break;
+  }
   return true;
 }
 

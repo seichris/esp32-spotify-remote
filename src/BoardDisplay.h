@@ -13,7 +13,11 @@ class BoardDisplay {
   BoardDisplay& operator=(const BoardDisplay&) = delete;
 
   bool begin();
-  Arduino_CO5300& gfx();
+  Arduino_GFX& gfx();
+  void setRotation(uint8_t rotation);
+  uint8_t rotation() const { return rotation_; }
+  int16_t width() const;
+  int16_t height() const;
   void setBrightness(uint8_t value);
   void sleep();
   void wake();
@@ -21,4 +25,6 @@ class BoardDisplay {
  private:
   Arduino_DataBus* bus_ = nullptr;
   Arduino_CO5300* panel_ = nullptr;
+  Arduino_GFX* surface_ = nullptr;
+  uint8_t rotation_ = 0;
 };

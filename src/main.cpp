@@ -8,6 +8,7 @@
 #include "BoardDisplay.h"
 #include "Config.h"
 #include "OAuthPortal.h"
+#include "OrientationSensor.h"
 #include "PhysicalButtons.h"
 #include "SpotifyClient.h"
 #include "TouchController.h"
@@ -15,6 +16,7 @@
 namespace {
 BoardDisplay display;
 TouchController touch;
+OrientationSensor orientation_sensor;
 PhysicalButtons physical_buttons;
 SpotifyClient spotify;
 OAuthPortal oauth_portal(spotify);
@@ -34,6 +36,18 @@ bool deadlineReached(uint32_t deadline) {
   return static_cast<int32_t>(millis() - deadline) >= 0;
 }
 
+void handleOrientation() {
+  uint8_t rotation = display.rotation();
+  if (!orientation_sensor.poll(rotation)) {
+    return;
+  }
+  touch.setRotation(rotation);
+  touch_was_down = false;
+  ui.setRotation(rotation);
+  Serial.printf("Display rotation: %u (%d x %d)\n", rotation,
+                display.width(), display.height());
+}
+
 String deviceUrl() {
   return String("http://") + Config::kHostname + ".local";
 }
@@ -49,6 +63,7 @@ bool connectWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   const uint32_t deadline = millis() + Config::kWiFiConnectTimeoutMs;
   while (WiFi.status() != WL_CONNECTED && !deadlineReached(deadline)) {
+    handleOrientation();
     delay(100);
   }
   if (WiFi.status() != WL_CONNECTED) {
@@ -65,6 +80,7 @@ bool synchronizeClock() {
   const uint32_t deadline = millis() + Config::kClockSyncTimeoutMs;
   time_t now = time(nullptr);
   while (now < 1700000000 && !deadlineReached(deadline)) {
+    handleOrientation();
     delay(100);
     now = time(nullptr);
   }
@@ -207,6 +223,9 @@ void setup() {
   const bool touch_ok = touch.begin();
   Serial.printf("Touch: %s, device id 0x%02X\n", touch_ok ? "ready" : "not found",
                 touch.deviceId());
+  const bool orientation_ok = orientation_sensor.begin();
+  Serial.printf("Orientation: QMI8658 %s\n",
+                orientation_ok ? "ready" : "not found; portrait fallback");
   physical_buttons.begin();
   Serial.printf("Buttons: BOOT ready, PWR via AXP2101 %s\n",
                 physical_buttons.pmuAvailable() ? "ready" : "not found");
@@ -236,6 +255,8 @@ void setup() {
 }
 
 void loop() {
+  handleOrientation();
+
   if (WiFi.status() != WL_CONNECTED) {
     if (deadlineReached(next_wifi_retry_ms)) {
       next_wifi_retry_ms = millis() + 10000;

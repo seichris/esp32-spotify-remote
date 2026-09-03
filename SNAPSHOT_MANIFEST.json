@@ -1,9 +1,9 @@
 {
   "name": "esp32-spotify-remote-waveshare-amoled-2.06",
-  "generated_at_utc": "2026-09-01T14:47:32Z",
+  "generated_at_utc": "2026-09-03T12:17:01Z",
   "target": "Waveshare ESP32-S3-Touch-AMOLED-2.06",
   "status": "source snapshot; static repository checks passed; physical-board validation still required",
-  "file_count": 30,
+  "file_count": 32,
   "files": [
     {
       "path": ".github/workflows/platformio.yml",
@@ -32,8 +32,8 @@
     },
     {
       "path": "README.md",
-      "size": 4351,
-      "sha256": "5b99b24f90709cc431b5bf33b032f4e90ad58fd5ba9b0ba137e5de65476af159"
+      "size": 4545,
+      "sha256": "2a9e2f7a9bf581815e7c402450dffc26cd9434593e20306bd36612d4312560c4"
     },
     {
       "path": "data/README.md",
@@ -42,23 +42,23 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "size": 1512,
-      "sha256": "988fc709b66ad21ef4d032c0b933114a8cdc653c0a3eb6f20f8c688efd56e2d8"
+      "size": 2394,
+      "sha256": "36cfad73d59cc75a93f94f48f21325e69cf7fe42958b04dc39d17f1842baacc5"
     },
     {
       "path": "docs/HARDWARE.md",
-      "size": 1083,
-      "sha256": "bd51d86de34a0b8064de4068de38026da75bd61debc759f6650b610dad973a56"
+      "size": 1783,
+      "sha256": "bf5de4b50770890c276170d7f0cef3cce70b3f876101226d81303c8ac8fc294d"
     },
     {
       "path": "docs/TESTING.md",
-      "size": 1097,
-      "sha256": "06eb45d19e46c00957895877181b54eae9cc456b2649078aa551fa785fb4c25a"
+      "size": 1553,
+      "sha256": "1aff6ab38b467896337fd9b8d36ae5faa82861075d5d099d041f0859b88811b5"
     },
     {
       "path": "include/Config.h",
-      "size": 916,
-      "sha256": "8e633d4e1134b1fc7a45b8e72a87ab09bbd100603c3a2097ec4013899cf9f235"
+      "size": 1021,
+      "sha256": "4cde6c808f0098261a479ba50e11fbf2136aaea6908bfe1500eea4537a8ab626"
     },
     {
       "path": "include/secrets.example.h",
@@ -72,28 +72,28 @@
     },
     {
       "path": "platformio.ini",
-      "size": 1129,
-      "sha256": "f9154a408146d6804a1672b95b355205d9a19671a3e8d561ce5461f05031bb37"
+      "size": 1160,
+      "sha256": "3d533ee57dd59e1ddad08afb09f71f10ce171517b3c7a22d5480ad815347e8ad"
     },
     {
       "path": "src/AppUi.cpp",
-      "size": 18104,
-      "sha256": "eba0a3ca82015c8f3c39a797ebbe22128ded08b684a321bad446a82d402d4390"
+      "size": 22859,
+      "sha256": "3580022a81fc45a910826545ebae3293c4e687691ab73b10fada15b50c015d05"
     },
     {
       "path": "src/AppUi.h",
-      "size": 2135,
-      "sha256": "8dcdea0bc5d318ab16b9667c88941db37fefe3bcb2bdaf9570871fa7d96eb4fb"
+      "size": 2247,
+      "sha256": "cde27b1b3d1839722615eb0e8936c0718a60c8fb3d3d348dbaf6de8af4674985"
     },
     {
       "path": "src/BoardDisplay.cpp",
-      "size": 1284,
-      "sha256": "3269b9703a524b864c6b6b15523b0401235d8a240fc665191ca23f53100bcb98"
+      "size": 7395,
+      "sha256": "f6d8e824bc154b70125eccc35755dce82293aa6b113e786d0b7c50a3a6aa42a5"
     },
     {
       "path": "src/BoardDisplay.h",
-      "size": 509,
-      "sha256": "9ce8ae39f1f0c996e04b6e7584c6cb9158d266b34246ddf4013e60b61d7f8d7a"
+      "size": 704,
+      "sha256": "4ed1f822e0c944070c8b45781e8017993061c3f2e6f0705a5390fc5e0bfb41ab"
     },
     {
       "path": "src/OAuthPortal.cpp",
@@ -104,6 +104,16 @@
       "path": "src/OAuthPortal.h",
       "size": 510,
       "sha256": "8de9cb2bf1a179e4376a9ade0639f81495643f33051aa0c9d472673ea9d3d55f"
+    },
+    {
+      "path": "src/OrientationSensor.cpp",
+      "size": 2427,
+      "sha256": "0fc2cf6ca7bb8667fd878de5d7d3363bd4b6ef1644c1522b1a1c33f170979dbb"
+    },
+    {
+      "path": "src/OrientationSensor.h",
+      "size": 440,
+      "sha256": "fb8b2b4c1fa6731efcefd73c8d4e33b41cd6191a371fae91c75036dd8a12313e"
     },
     {
       "path": "src/PhysicalButtons.cpp",
@@ -132,18 +142,18 @@
     },
     {
       "path": "src/TouchController.cpp",
-      "size": 2170,
-      "sha256": "cbd0363df102fa6c966dff604005f5ea5c668d4174fa9d36d00121ee5128f648"
+      "size": 2502,
+      "sha256": "ac58119024f2abd72f7af09ab0b5cc15d2ab798367907561c9e814ee365090ce"
     },
     {
       "path": "src/TouchController.h",
-      "size": 404,
-      "sha256": "8f7a933260bf6f0bbe953ee8f89aa059788a03799f02f7aa0ccb156bad79fa77"
+      "size": 496,
+      "sha256": "7aca3a9476116ecf4dbf980b5d20d6761f6d6b7c4034c4eb8b55a61366077727"
     },
     {
       "path": "src/main.cpp",
-      "size": 7747,
-      "sha256": "7d25b41bdd40ef2810c6f7d8af71f5bb3ac3e3a350c9498f8268d6fc57e337f5"
+      "size": 8399,
+      "sha256": "87437a4ddd9f102beba04a90d0c0a3044e59dc2f1930a0f60b96809a13c79a42"
     },
     {
       "path": "tools/check_repository.py",

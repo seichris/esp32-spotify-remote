@@ -14,6 +14,7 @@ class AppUi {
   ~AppUi();
 
   void begin();
+  void setRotation(uint8_t rotation);
   void showStatus(const String& heading, const String& detail = String(),
                   uint16_t accent = 0x1EC7);
   void showAuthorization(const String& device_url);
@@ -39,6 +40,7 @@ class AppUi {
   static constexpr uint16_t RGB565_SPOTIFY_GREEN = 0x1EC7;
 
   void invalidateTrack();
+  void rebuildTitleCanvas();
   void drawHeader(const String& text, uint16_t accent);
   void drawControls(bool is_playing);
   void drawTrackArtwork(const char* artwork_path, bool artwork_available);
@@ -47,7 +49,8 @@ class AppUi {
   void drawProgressBar(uint32_t progress_ms, uint32_t duration_ms);
   void drawPlaceholderArt();
   void drawCenteredText(const String& text, int16_t y, uint8_t size,
-                        uint16_t color, int16_t max_width = 390);
+                        uint16_t color, int16_t box_left = 0,
+                        int16_t box_width = -1);
   String ellipsize(const String& text, uint8_t size, int16_t max_width) const;
   bool drawJpeg(const char* path, int16_t target_x, int16_t target_y,
                 int16_t target_size);

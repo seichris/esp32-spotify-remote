@@ -15,7 +15,9 @@ not a hidden or inaccessible GitHub fork.
 
 ## Features
 
-- Native portrait UI for the 410 × 502 AMOLED
+- Automatic four-side rotation using the onboard QMI8658 accelerometer
+- Portrait and landscape layouts for the 410 × 502 AMOLED, with a full
+  320-pixel cover in landscape
 - Previous, play/pause, and next touch controls
 - Current title, artists, album artwork, playback state, and progress
 - Spotify Authorization Code **with PKCE**; no client secret in firmware
@@ -113,6 +115,7 @@ python3 tools/spotify_oauth_bridge.py --device-url http://192.168.1.123
 include/Config.h             non-secret behavior and timing
 include/secrets.example.h    credential template
 src/BoardDisplay.*           CO5300/QSPI board adapter
+src/OrientationSensor.*      QMI8658 four-side orientation sensing
 src/TouchController.*        FT3168-compatible I2C touch
 src/SpotifyClient.*          PKCE, API, controls, artwork
 src/OAuthPortal.*            local setup web server
